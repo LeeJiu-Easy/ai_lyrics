@@ -199,10 +199,6 @@ def write_propmt_result(genre, theme, vibe, gender, keywords, result):
         }
     ).execute()
 
-def write_prompt_keywords(keywords):
-
-
-
 
 genre_list = ['K-POP', 'Hip hop', '발라드', 'R&B']
 gender_list = ['남성', '여성', '성별무관']
