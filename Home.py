@@ -26,8 +26,8 @@ openai.api_key = st.secrets.OPENAI_TOKEN
 openai_model_version = "gpt-3.5-turbo"
 
 st.title("🎶 AI Lyrics")
-st.subheader("AI를 이용하여 나만의 가사를 생성해 보세요.")
-st.text(f"Powerd by {openai_model_version}")
+st.text("AI를 이용하여 나만의 가사를 생성해 보세요.")
+
 
 
 
@@ -267,3 +267,5 @@ with st.form("my_form"):
                     value=result,
                     height=200,
                 )
+
+st.text(f"Powerd by {openai_model_version}")
