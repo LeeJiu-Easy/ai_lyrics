@@ -38,7 +38,7 @@ def generate_prompt(genre, theme, vibe, gender, keywords):
         반드시 특정한 단어 및 구절이나 음운 패턴의 반복이 있어야 합니다.
         K-POP의 특징이 드러나야 합니다.
         키워드가 주어질 경우, 반드시 키워드가 포함된 구(Phrase)를 포함해야 합니다.
-        성별이 주어질 경우, 성별에 어울리도록 작성해 주세요.
+        성별이 주어질 경우, 성별이 말하는 듯이 작성해 주세요.
         주제와 관련있는 서사를 가사에 적용해 주세요.
         한국어로 가사를 만들되 3개 이상의 영어 단어를 포함해 주세요.
         아래의 예시는 참고용이므로 인용하지 마세요.
@@ -79,7 +79,7 @@ def generate_prompt(genre, theme, vibe, gender, keywords):
         반드시 특정한 단어 및 구절이나 음운 패턴의 반복이 있어야 합니다.
         힙합의 특징이 드러나야 합니다.
         키워드가 주어질 경우, 반드시 키워드가 포함된 구(Phrase)를 포함해야 합니다.
-        성별이 주어질 경우, 성별에 어울리도록 작성해 주세요.
+        성별이 주어질 경우, 성별이 말하는 듯이 작성해 주세요.
         주제와 관련있는 서사를 가사에 적용해 주세요.
         한국어로 가사를 만들되 영어 단어를 많이 사용해 주세요.
         아래의 예시는 참고용이므로 인용하지 마세요.
@@ -111,7 +111,7 @@ def generate_prompt(genre, theme, vibe, gender, keywords):
         반드시 특정한 단어 및 구절이나 음운 패턴의 반복이 있어야 합니다.
         R&B의 특징이 드러나야 합니다.
         키워드가 주어질 경우, 반드시 키워드가 포함된 구(Phrase)를 포함해야 합니다.
-        성별이 주어질 경우, 성별에 어울리도록 작성해 주세요.
+        성별이 주어질 경우, 성별이 말하는 듯이 작성해 주세요.
         주제와 관련있는 서사를 가사에 적용해 주세요.
         한국어로 가사를 만들되 영어 단어를 많이 사용해 주세요.
         아래의 예시는 참고용이므로 인용하지 마세요.
@@ -145,7 +145,7 @@ def generate_prompt(genre, theme, vibe, gender, keywords):
         반드시 특정한 단어 및 구절이나 음운 패턴의 반복이 있어야 합니다.
         발라드의 특징이 드러나야 합니다.
         키워드가 주어질 경우, 반드시 키워드가 포함된 구(Phrase)를 포함해야 합니다.
-        성별이 주어질 경우, 성별에 어울리도록 작성해 주세요.
+        성별이 주어질 경우, 성별이 말하는 듯이 작성해 주세요.
         한국어로 가사를 만들되 영어 단어를 많이 사용해 주세요.
         아래의 예시는 참고용이므로 인용하지 마세요.
 
@@ -187,21 +187,33 @@ def request_chat_completion(prompt):
     )
     return response["choices"][0]["message"]["content"]
 
-def write_propmt_result(genre, theme, vibe, gender, keywords, result):
-    supabase_client.table("prompt_results").insert(
+
+def write_propmt_result(genre, theme, vibe, gender, result, keywords):
+    #테이블에 새로운 레코드 삽입
+    response = supabase_client.table("prompt_results").insert(
         {
             "genre": genre,
             "theme": theme,
             "vibe": vibe,
             "gender": gender,
-            "keywords": keywords,
             "result": result,
         }
     ).execute()
 
+    result_id = response.data[0]['result_id']
+
+    if keywords:
+        for keyword in keywords:
+            supabase_client.table("keywords").insert(
+                {
+                    "result_id": result_id,
+                    "keywords": keyword,
+                }
+            ).execute()
+
 
 genre_list = ['K-POP', 'Hip hop', '발라드', 'R&B']
-gender_list = ['남성', '여성', '성별무관']
+gender_list = ['남성', '여성', '성별 무관']
 
 with st.form("my_form"):
     theme = st.text_input("주제", placeholder="첫사랑 / 이별 / 자기 자랑 등")
@@ -248,7 +260,8 @@ with st.form("my_form"):
                 keywords = [x for x in keywords if x]
                 prompt = generate_prompt(genre, theme, vibe, gender, keywords)
                 result = request_chat_completion(prompt)
-                write_propmt_result(genre, theme, vibe, gender, keywords, result)
+                write_propmt_result(genre, theme, vibe, gender, result, keywords)
+
                 st.text_area(
                     label="가사 생성 결과",
                     value=result,
